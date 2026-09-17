@@ -18,7 +18,7 @@ http:
       require-body: true
       binary-mode: true
       max-size: 10485760
-      argument: '{"captionLang":"off","blockUpload":true,"blockImmersive":true,"blockShorts":false,"debug":false}'
+      argument: '{"captionLang":"off","blockUpload":true,"blockImmersive":true,"blockShorts":true,"debug":false}'
     - name: youtube.request
       match: '^https?://[\w-]+\.googlevideo\.com/initplayback.+&ack.*'
       type: request
