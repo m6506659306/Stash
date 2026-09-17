@@ -1,6 +1,6 @@
-name: YouTube 去广告 (Enhance)
+name: YouTube
 desc: |-
-  移除 YouTube / YouTube Music 播放、推荐流、搜索、Shorts 中的广告；可屏蔽上传、选段、Shorts 按钮；支持字幕翻译。
+  去广告；导航栏改写；后台播放。
 icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/YouTube.png
 category: 去广告
 
