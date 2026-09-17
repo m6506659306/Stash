@@ -1,10 +1,7 @@
 name: YouTube 去广告 (Enhance)
 desc: |-
   移除 YouTube / YouTube Music 播放、推荐流、搜索、Shorts 中的广告；可屏蔽上传、选段、Shorts 按钮；支持字幕翻译。
-  覆写内容与 Maasea/sgmodule 的 YouTube.Enhance.sgmodule 逐项对齐：3 条脚本（1 response + 2 request）齐备，
-  均要求完整响应体（max-size 放宽），MITM 域与上游模块一致。
-  脚本已改为本仓副本 Script/Youtube/（快照自 Maasea/sgmodule master，2026-09-17）：
-  youtube.response.js Build 2026/7/19 sha256 f98483d5；youtube.request.js Build 2026/7/12 sha256 3ecca15e。
+icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/YouTube.png
 category: 去广告
 
 http:
