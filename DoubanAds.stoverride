@@ -9,9 +9,9 @@
 #     原 ^https?://erebor\.douban\.com/count/\?ad= 规则与对应 mitm 声明为冗余，已移除
 #   · 广告素材（图片）由 reject 改为 reject-img（200 + 1px gif），避免破图与重试
 #   · movie/banner 由 reject 改为 reject-dict（返回 {}），避免 App 拿到 404 空体后解析异常
-name: "📺 豆瓣去广告"
+name: "豆瓣"
 desc: |-
-  豆瓣 App：屏蔽开屏、信息流与首页横幅广告
+  豆瓣去广告。
 icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/DouBan.png
 category: 去广告
 
