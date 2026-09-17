@@ -3,12 +3,27 @@
 #
 # 转写差异（QX → Stash）：
 #   · hostname 声明 → http.mitm（URL 重写需 MitM 解密）；host-suffix reject → rules 段 REJECT
-#   · QX hostname 只声明 img1/2/3/9.doubanio.com，而素材规则匹配 img\d（1-9），
-#     QX 上 img4-8 的请求不解密、该规则静默失效；此处 mitm 用 img*.doubanio.com 收全
+#   · 素材域 mitm 用 img1~img9.doubanio.com 逐个列出（QX hostname 只声明 img1/2/3/9，
+#     而素材规则匹配 img\d，QX 上 img4-8 不解密、规则静默失效；Stash 官方文档只给了
+#     前缀通配 `*.domain` 的示例，中缀 `img*.domain` 是否受支持无据可依，故显式列出）
 #   · erebor.douban.com 既然整域 REJECT，连接不进入 HTTP 引擎，
 #     原 ^https?://erebor\.douban\.com/count/\?ad= 规则与对应 mitm 声明为冗余，已移除
-#   · 广告素材（图片）由 reject 改为 reject-img（200 + 1px gif），避免破图与重试
+#   · 广告素材（图片）由 reject 改为 reject-img（Stash 返回 200 + 1px gif），避免破图与重试
 #   · movie/banner 由 reject 改为 reject-dict（返回 {}），避免 App 拿到 404 空体后解析异常
+#
+# 2026-09-17 修正（本文件此前 7 条 url-rewrite 全部失效）+ 二轮 A/B 抓包同步：
+#   · 【bug 修复】url-rewrite 正则原写作双反斜杠（'\\.' '\\d' '\\?'），而 YAML 单引号不处理
+#     转义，正则里 '\\' 是「字面反斜杠」——URL 里不存在反斜杠，7 条规则一条都命中不了。
+#     改为单反斜杠后，在同一份 804 条抓包上实测命中：app_ads 8 / common_ads 0 / erebor 15 /
+#     movie-ad 12 / home_banner 2 / movie-banner 0 / dale_ad 3；双反斜杠写法为 0。
+#   · 新增两条接口 reject-dict：movie/(<id>/)?ad 与 home_banner。重写全开段（A 段）实测
+#     二者仍返回真实广告（movie/ad 4.6 KB：ad_id 270456，素材走 img\d.doubanio.com dale_ad；
+#     home_banner 3.0 KB：ad_id 270540 + erebor 点击上报），既有规则一条都没命中
+#   · 新增内嵌三方广告 SDK 请求域拦截（跨 App 级，QX 侧对应 Filter/rules_plus.list）。
+#     豆瓣 App 的广告槽位由自家 feed_ad 下发、内容由内嵌 SDK 直拉，只拦豆瓣接口会出现
+#     「重写全开广告照出」：A 段 mi.gdt.qq.com/gdt_mview.fcg 仍返回 12 条真实广告，
+#     槽位 4111670407616337 / 7095017777787567 与 feed_ad 下发的 gdtSDK sdk_id 一致
+#   · movie/banner 与 api.douban.com/b*/common_ads 两轮抓包 0 命中，保留作兜底
 name: "豆瓣"
 desc: |-
   豆瓣去广告。
@@ -19,17 +34,33 @@ rules:
   # 广告投放域整域拦截（连接层，无需 MitM）
   - DOMAIN-SUFFIX,erebor.douban.com,REJECT
   - DOMAIN-SUFFIX,ad.doubanio.com,REJECT
+  # 豆瓣 App 内嵌的三方广告 SDK 请求域（跨 App 级；优量汇 / 穿山甲 / 素材 CDN）
+  - DOMAIN-SUFFIX,mi.gdt.qq.com,REJECT
+  - DOMAIN-SUFFIX,v2mi.gdt.qq.com,REJECT
+  - DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao.com,REJECT
+  - DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao-b.com,REJECT
+  - DOMAIN,pgdt.gtimg.cn,REJECT
 
 http:
   mitm:
     - api.douban.com
     - frodo.douban.com
-    - img*.doubanio.com
+    - img1.doubanio.com
+    - img2.doubanio.com
+    - img3.doubanio.com
+    - img4.doubanio.com
+    - img5.doubanio.com
+    - img6.doubanio.com
+    - img7.doubanio.com
+    - img8.doubanio.com
+    - img9.doubanio.com
   url-rewrite:
     # 广告接口：返回 {} ，App 视为「无广告数据」
     - '^https?://api\.douban\.com/v\d/app_ads/ - reject-dict'
     - '^https?://api\.douban\.com/b.*/common_ads\?.* - reject-dict'
     - '^https?://frodo\.douban\.com/api/v2/erebor/ - reject-dict'
+    - '^https?://frodo\.douban\.com/api/v2/movie/(?:\d+/)?ad(\?|$) - reject-dict'
+    - '^https?://frodo\.douban\.com/api/v2/home_banner - reject-dict'
     - '^https?://frodo\.douban\.com/api/v2/movie/banner - reject-dict'
     # 广告素材：返回 1px gif
     - '^https?://img\d\.doubanio\.com/view/dale-online/dale_ad/ - reject-img'
