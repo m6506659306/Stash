@@ -1,6 +1,9 @@
 name: YouTube
 desc: |-
   去广告；导航栏改写；后台播放。
+  本地补丁 2026-10-13：youtube.response.js 加固 —— playabilityStatus 缺失时不再抛异常中断
+  （原行为：整条响应被 $done({}) 原样透传，广告照出，日志报 TypeError ... pictureInPictureRender）；
+  处理器异常改为记录 path+url 并写回已去广告的响应体。上游 Maasea/sgmodule@65075cd 未修。
 icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/YouTube.png
 category: 去广告
 
